@@ -7,27 +7,44 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class FlappyBird extends ApplicationAdapter {
+
 	SpriteBatch batch;
-	Texture img;
-	
+	Texture bird;
+	private Texture background;
+
+	//configuration attributes
+	private int deviceWidth;
+	private int deviceHeight;
+	private int moving = 0;
+
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
+		bird = new Texture("passaro1.png");
+		background = new Texture("fundo.png");
+		deviceWidth = Gdx.graphics.getWidth();
+		deviceHeight = Gdx.graphics.getHeight();
+
+
 	}
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(1, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		//Gdx.gl.glClearColor(1, 0, 0, 1);
+		//Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
-		batch.draw(img, 0, 0);
+		moving++;
+
+		batch.draw(background, 0,0,deviceWidth,deviceHeight);
+		batch.draw(bird, moving, 700);
 		batch.end();
+
+
 	}
 	
 	@Override
 	public void dispose () {
-		batch.dispose();
-		img.dispose();
+		//batch.dispose();
+		//img.dispose();
 	}
 }
