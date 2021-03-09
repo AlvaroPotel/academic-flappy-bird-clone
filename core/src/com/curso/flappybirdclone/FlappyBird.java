@@ -7,6 +7,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Rectangle;
 
 import java.util.Random;
 
@@ -17,6 +21,11 @@ public class FlappyBird extends ApplicationAdapter {
 	private Texture background;
 	private Texture pipeDown;
 	private Texture pipeUp;
+
+	//crash
+	private Circle birdCircle;
+	private Rectangle pipeUpRectangle;
+	private Rectangle pipeDownRectangle;
 
 	//draw the score
 	private BitmapFont font;
@@ -61,6 +70,8 @@ public class FlappyBird extends ApplicationAdapter {
 		font.setColor(Color.WHITE);
 		font.getData().setScale(6);
 
+		birdCircle = new Circle();
+
 		deviceWidth = Gdx.graphics.getWidth();
 		deviceHeight = Gdx.graphics.getHeight();
 		verticalStartingPosition = deviceHeight/2;
@@ -88,7 +99,7 @@ public class FlappyBird extends ApplicationAdapter {
 
 		} else{
 
-			pipeMovingPositionHorizontal -= deltaTime *200;
+			pipeMovingPositionHorizontal -= deltaTime *250;
 			velocityFall ++;
 
 			//Bird
@@ -124,6 +135,22 @@ public class FlappyBird extends ApplicationAdapter {
 		font.draw(batch, String.valueOf(score), deviceWidth/2, deviceHeight - 150);
 
 		batch.end();
+
+		//creating shapes
+		birdCircle.set(120 + birds[0].getWidth()/2, verticalStartingPosition + birds[0].getHeight()/2, birds[0].getWidth()/2);
+		pipeDownRectangle = new Rectangle(pipeMovingPositionHorizontal,
+				deviceHeight / 2 - pipeDown.getHeight() - roomBtwPipes/2 + heightPipesRandom,
+				pipeDown.getWidth(),
+				pipeDown.getHeight());
+		pipeUpRectangle = new Rectangle(pipeMovingPositionHorizontal,
+				deviceHeight / 2 + roomBtwPipes/2 + heightPipesRandom,
+				pipeUp.getWidth(),
+				pipeUp.getHeight());
+
+		//test crash
+		if(Intersector.overlaps(birdCircle, pipeDownRectangle) || Intersector.overlaps(birdCircle, pipeUpRectangle)){
+			Gdx.app.log("Crash", "Crash detect");
+		}
 
 	}
 	
