@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -11,6 +12,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.util.Random;
 
@@ -37,8 +40,8 @@ public class FlappyBird extends ApplicationAdapter {
 	private boolean scoredPoint;
 
 	//configuration attributes
-	private int deviceWidth;
-	private int deviceHeight;
+	private float deviceWidth;
+	private float deviceHeight;
 
 	/*
 		Status 0, game not start
@@ -60,6 +63,13 @@ public class FlappyBird extends ApplicationAdapter {
 	private float heightPipesRandom;;
 
 	private float deltaTime;
+
+	//camera
+	private OrthographicCamera camera;
+	private Viewport viewport;
+	private final float VIRTUAL_WIDTH = 768;
+	private final float VIRTUAL_HEIGHT = 1024;
+
 
 	@Override
 	public void create () {
@@ -86,8 +96,13 @@ public class FlappyBird extends ApplicationAdapter {
 
 		birdCircle = new Circle();
 
-		deviceWidth = Gdx.graphics.getWidth();
-		deviceHeight = Gdx.graphics.getHeight();
+		//camera configuration
+		camera = new OrthographicCamera();
+		camera.position.set(VIRTUAL_WIDTH/2, VIRTUAL_HEIGHT/2, 0);
+		viewport = new StretchViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, camera);
+
+		deviceWidth = VIRTUAL_WIDTH;
+		deviceHeight = VIRTUAL_HEIGHT;
 		verticalStartingPosition = deviceHeight/2;
 		pipeMovingPositionHorizontal = deviceWidth;
 		pipeMovingPositionVertical = deviceWidth;
@@ -99,6 +114,11 @@ public class FlappyBird extends ApplicationAdapter {
 
 	@Override
 	public void render () {
+
+		camera.update();
+
+		//clear frames
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
 		deltaTime = Gdx.graphics.getDeltaTime();
 		variable += deltaTime *8;
@@ -157,6 +177,9 @@ public class FlappyBird extends ApplicationAdapter {
 
 		}
 
+		//camera configuration
+		batch.setProjectionMatrix(camera.combined);
+
 		batch.begin();
 
 		batch.draw(background, 0,0,deviceWidth,deviceHeight);
@@ -193,8 +216,12 @@ public class FlappyBird extends ApplicationAdapter {
 		}
 
 	}
-	
+
 	@Override
-	public void dispose () {
+	public void resize(int width, int height) {
+
+		viewport.update(width, height);
+
 	}
+
 }
