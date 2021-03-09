@@ -14,6 +14,8 @@ import com.badlogic.gdx.math.Rectangle;
 
 import java.util.Random;
 
+import jdk.nashorn.internal.objects.annotations.Where;
+
 public class FlappyBird extends ApplicationAdapter {
 
 	private SpriteBatch batch;
@@ -21,6 +23,8 @@ public class FlappyBird extends ApplicationAdapter {
 	private Texture background;
 	private Texture pipeDown;
 	private Texture pipeUp;
+	private Texture gameOver;
+	private BitmapFont message;
 
 	//crash
 	private Circle birdCircle;
@@ -36,7 +40,11 @@ public class FlappyBird extends ApplicationAdapter {
 	private int deviceWidth;
 	private int deviceHeight;
 
-	//Status 0, game not start
+	/*
+		Status 0, game not start
+		Status 1, game started
+		Status 2, game over
+	 */
 	private int gameStatus = 0;
 
 	private float variable = 0;
@@ -65,6 +73,12 @@ public class FlappyBird extends ApplicationAdapter {
 
 		pipeDown = new Texture("cano_baixo_maior.png");
 		pipeUp = new Texture("cano_topo_maior.png");
+
+		gameOver = new Texture("game_over.png");
+
+		message = new BitmapFont();
+		message.setColor(Color.WHITE);
+		message.getData().setScale(3);
 
 		font = new BitmapFont();
 		font.setColor(Color.WHITE);
@@ -99,31 +113,48 @@ public class FlappyBird extends ApplicationAdapter {
 
 		} else{
 
-			pipeMovingPositionHorizontal -= deltaTime *250;
 			velocityFall ++;
 
-			//Bird
-			if(Gdx.input.justTouched()){
-				velocityFall = - 15;
-			}
+			//check bird position
 			if(verticalStartingPosition > 0 || velocityFall < 0){
 				verticalStartingPosition = verticalStartingPosition - velocityFall;
 			}
 
-			//checks if the pipe has left the screen
-			if(pipeMovingPositionHorizontal < -pipeUp.getWidth()){
-				pipeMovingPositionHorizontal = deviceWidth;
-				heightPipesRandom = numberRandom.nextInt(400) - 200;
-				scoredPoint = false;
-			}
+			if(gameStatus == 1 ){
 
-			//check score
-			if(pipeMovingPositionHorizontal < 120){
-				if(!scoredPoint){
-					score++;
-					scoredPoint = true;
+				//pipe travel speed
+				pipeMovingPositionHorizontal -= deltaTime *250;
+
+				//Bird
+				if(Gdx.input.justTouched()){
+					velocityFall = - 15;
+				}
+
+				//checks if the pipe has left the screen
+				if(pipeMovingPositionHorizontal < -pipeUp.getWidth()){
+					pipeMovingPositionHorizontal = deviceWidth;
+					heightPipesRandom = numberRandom.nextInt(400) - 200;
+					scoredPoint = false;
+				}
+
+				//check score
+				if(pipeMovingPositionHorizontal < 120){
+					if(!scoredPoint){
+						score++;
+						scoredPoint = true;
+					}
+				}
+			//game over screen
+			}else {
+				if(Gdx.input.justTouched()){
+					gameStatus = 0;
+					score = 0;
+					velocityFall = 0;
+					verticalStartingPosition = deviceHeight/2;
+					pipeMovingPositionHorizontal = deviceWidth;
 				}
 			}
+
 		}
 
 		batch.begin();
@@ -133,6 +164,11 @@ public class FlappyBird extends ApplicationAdapter {
 		batch.draw(pipeDown, pipeMovingPositionHorizontal,deviceHeight / 2 - pipeDown.getHeight() - roomBtwPipes/2 + heightPipesRandom);
 		batch.draw(birds[(int)variable], 120, verticalStartingPosition);
 		font.draw(batch, String.valueOf(score), deviceWidth/2, deviceHeight - 150);
+
+		if(gameStatus == 2 ){
+			batch.draw(gameOver, deviceWidth/2 - gameOver.getWidth()/2,deviceHeight / 2);
+			message.draw(batch,"Tap to play again",deviceWidth/2 - 165, deviceHeight/2 - gameOver.getHeight()/2);
+		}
 
 		batch.end();
 
@@ -148,15 +184,17 @@ public class FlappyBird extends ApplicationAdapter {
 				pipeUp.getHeight());
 
 		//test crash
-		if(Intersector.overlaps(birdCircle, pipeDownRectangle) || Intersector.overlaps(birdCircle, pipeUpRectangle)){
-			Gdx.app.log("Crash", "Crash detect");
+		if(Intersector.overlaps(birdCircle, pipeDownRectangle) ||
+				Intersector.overlaps(birdCircle, pipeUpRectangle)||
+				verticalStartingPosition <=0 ||
+				verticalStartingPosition > deviceHeight){
+			gameStatus = 2;
+
 		}
 
 	}
 	
 	@Override
 	public void dispose () {
-		//batch.dispose();
-		//img.dispose();
 	}
 }
